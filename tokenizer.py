@@ -24,7 +24,18 @@ def get_gpt2_tokenizer() -> Tokenizer:
     Return a GPT-2 tokenizer.
     """
     vocab, merges = tokenizers.models.BPE.read_file("data/vocab.json", "data/merges.txt")
+    print("Before cleaning:")
+    print("Vocab size:", len(vocab))
+    print("Sample vocab items:", list(vocab.items())[:10])
+    print("Sample merges:", merges[:10])
+    
     clean_vocab(vocab, merges)
+    
+    print("\nAfter cleaning:")
+    print("Vocab size:", len(vocab))
+    print("Sample vocab items:", list(vocab.items())[:10])
+    print("Sample merges:", merges[:10])
+    
     tokenizer = Tokenizer(tokenizers.models.BPE(vocab, merges))
     tokenizer.pre_tokenizer = tokenizers.pre_tokenizers.ByteLevel(add_prefix_space = False)
     tokenizer.decoder = tokenizers.decoders.ByteLevel()
@@ -55,8 +66,36 @@ def clean_vocab(vocab: Dict[str, int], merges: List[Tuple[str, str]]):
             A list of pairs of tokens (:obj:`Tuple[str, str]`), e.g. `[("a", "b"),...]`
     """
 
-    """YOUR CODE HERE"""
-    util.raiseNotDefined()
+    def body_is_digit(token: str) -> bool:
+ 
+        if token[0] == 'Ġ':
+            body = token[1:]
+        else:
+            body = token
+        return body.isdigit()
+
+    sorted_vocab = sorted(vocab.items(), key=lambda kv: kv[1])
+    new_vocab: Dict[str, int] = {}
+    next_id = 0
+    for token, _ in sorted_vocab:
+        if body_is_digit(token) and len(token.lstrip('Ġ')) > 1:
+            continue
+        new_vocab[token] = next_id
+        next_id += 1
+
+    vocab.clear()
+    vocab.update(new_vocab)
+
+    filtered_merges: List[Tuple[str, str]] = []
+    for a, b in merges:
+        if body_is_digit(a) and body_is_digit(b):
+            continue
+        if a not in vocab or b not in vocab:
+            continue
+        filtered_merges.append((a, b))
+
+    merges[:] = filtered_merges
+
 
 
 if __name__ == '__main__':
