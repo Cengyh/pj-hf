@@ -37,7 +37,16 @@ def get_topic_classification_pipeline() -> Callable[[str], dict]:
         >>> result = func("Would the US constitution be changed if the admendment received 2/3 of the popular vote?")
         {"label": "Politics & Government", "score": 0.9999999403953552}
     """
-    pipe = pipeline(model="cointegrated/rubert-tiny-sentiment-balanced")
+    pipe = pipeline(model="Prezily/bert-yahoo-answers")
+    # Manually map class indices to human‑readable topic names
+    topic_labels = [
+        'Society & Culture', 'Science & Mathematics', 'Health',
+        'Education & Reference', 'Computers & Internet', 'Sports',
+        'Business & Finance', 'Entertainment & Music',
+        'Family & Relationships', 'Politics & Government'
+    ]
+    pipe.model.config.id2label = {i: lbl for i, lbl in enumerate(topic_labels)}
+    pipe.model.config.label2id = {lbl: i for i, lbl in enumerate(topic_labels)}
     def func(text: str) -> dict:
         return pipe(text)[0]
     return func
