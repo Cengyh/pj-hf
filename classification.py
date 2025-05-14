@@ -45,8 +45,8 @@ def get_topic_classification_pipeline() -> Callable[[str], dict]:
         'Business & Finance', 'Entertainment & Music',
         'Family & Relationships', 'Politics & Government'
     ]
-    pipe.model.config.id2label = {i: lbl for i, lbl in enumerate(topic_labels)}
-    pipe.model.config.label2id = {lbl: i for i, lbl in enumerate(topic_labels)}
+    pipe.model.config.id2label = {i: label for i, label in enumerate(topic_labels)}
+    pipe.model.config.label2id = {label: i for i, label in enumerate(topic_labels)}
     def func(text: str) -> dict:
         return pipe(text)[0]
     return func
